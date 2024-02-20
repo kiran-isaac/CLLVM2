@@ -40,8 +40,12 @@ list(FILTER TEST_SOURCES EXCLUDE REGEX ".*main.cpp")
 # dont include files used
 list(FILTER TEST_SOURCES EXCLUDE REGEX ".*/test_files/*")
 
-add_executable(test ${TEST_SOURCES}
-        include/tokens.h)
+# if there arent any test files, remove the test executable
+if (TEST_SOURCES STREQUAL "")
+  return()
+endif()
+
+add_executable(test ${TEST_SOURCES})
 
 # Link against LLVM libraries
 target_link_libraries(test LLVM)
