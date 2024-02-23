@@ -203,10 +203,6 @@ string CToken::getTypeAsString() const {
       return ":";
     case CTokenType::CPunctuationQuestionMark:
       return "?";
-    case CTokenType::CPunctuationSingleQuote:
-      return "'";
-    case CTokenType::CPunctuationDoubleQuote:
-      return "\"";
     case CTokenType::CPunctuationBackslash:
       return "\\";
     case CTokenType::CPunctuationDot:

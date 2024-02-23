@@ -110,12 +110,11 @@ enum class CTokenType {
   CPunctuationSemicolon,     // ;
   CPunctuationColon,         // :
   CPunctuationQuestionMark,  // ?
-  CPunctuationSingleQuote,   // '
-  CPunctuationDoubleQuote,   // "
   CPunctuationBackslash,     // \.
-  CPunctuationHash,
-  
+  CPunctuationHash,          // #
   CPunctuationDot,           // .
+  CPunctuationArrow,         // ->
+  CPunctuationEllipsis,      // ...
   
   CEndOfFile,
   CUnknown,

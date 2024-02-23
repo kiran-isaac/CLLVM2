@@ -9,24 +9,39 @@ using std::unique_ptr, std::shared_ptr, std::string;
 
 class Lexer {
 public:
- Lexer(std::ifstream &source);
- ~Lexer();
+  explicit Lexer(std::istream &source);
+ 
+  unique_ptr<CToken> next();
 
 private:
-  std::ifstream &source;
+  std::istream &source;
 
   char buf1[4097]{};
   char buf2[4097]{};
 
   char *c;
+  string lexerError;
+  string id;
 
   unsigned int line;
   unsigned int col;
-
-  unique_ptr<CToken> next();
-
+  
   void refreshBuffer1();
   void refreshBuffer2();
 
   void advance();
+  
+  unique_ptr<CToken> parse_num();
+  
+  unique_ptr<CToken> parse_char();
+  
+  unique_ptr<CToken> parse_string();
+  
+  char parse_escape_character();
+  
+  unique_ptr<CToken> parse_word();
+  
+  unique_ptr<CToken> parse_keyword();
+  
+  bool is_keyword(const string &str);
 };

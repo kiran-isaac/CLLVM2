@@ -15,3 +15,15 @@ TEST(Lexer, TestFileOpenAndRead) {
 
   Lexer lexer(source);
 }
+
+TEST(Lexer, Keyword) {
+  std::string simulatedFileContent = "auto aut autoo";
+  std::stringstream simulatedFile(simulatedFileContent);
+  
+  Lexer lexer(simulatedFile);
+  
+  ASSERT_EQ(lexer.next()->type, CTokenType::CKeywordAuto);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CIdentifier);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CIdentifier);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CEndOfFile);
+}
