@@ -1,5 +1,6 @@
-#include <lexer.h>
+#include "lexer.h"
 #include <iostream>
+#include <algorithm>
 
 using std::unique_ptr, std::shared_ptr, std::string;
 
@@ -37,6 +38,9 @@ Lexer::~Lexer() {
 
 Lexer::Lexer(std::ifstream &source) : source(source) {
   // put eof at the end of buf1 and buf2
+  std::fill_n(buf1, 4096, EOF);
+  std::fill_n(buf2, 4096, EOF);
+  
   buf1[4096] = EOF;
   buf2[4096] = EOF;
   refreshBuffer1();
@@ -45,4 +49,8 @@ Lexer::Lexer(std::ifstream &source) : source(source) {
   c = buf1;
   line = 1;
   col = 1;
+}
+
+unique_ptr<CToken> Lexer::next() {
+  return unique_ptr<CToken>();
 }

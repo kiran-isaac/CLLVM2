@@ -15,15 +15,15 @@ public:
 private:
   std::ifstream &source;
 
-  char buf1[4097];
-  char buf2[4097];
+  char buf1[4097]{};
+  char buf2[4097]{};
 
   char *c;
 
   unsigned int line;
   unsigned int col;
 
-  unique_ptr<Token> next();
+  unique_ptr<CToken> next();
 
   void refreshBuffer1();
   void refreshBuffer2();
