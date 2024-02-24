@@ -56,3 +56,95 @@ TEST(Lexer, AllKeywordsWithCharsMissing) {
     ASSERT_EQ(token->type, CTokenType::CIdentifier);
   }
 }
+
+TEST(Lexer, Punctuation) {
+//  CPunctuationOpenParen,     // (
+//  CPunctuationCloseParen,    // )
+//  CPunctuationOpenBrace,     // {
+//  CPunctuationCloseBrace,    // }
+//  CPunctuationOpenBracket,   // [
+//  CPunctuationCloseBracket,  // ]
+//  CPunctuationComma,         // ,
+//  CPunctuationSemicolon,     // ;
+//  CPunctuationColon,         // :
+//  CPunctuationQuestionMark,  // ?
+//  CPunctuationBackslash,     // \.
+//  CPunctuationHash,          // #
+//  CPunctuationDot,           // .
+//  CPunctuationArrow,         // ->
+//  CPunctuationEllipsis,      // ...
+  string source = "(){}[],;:?\\#.->...";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationOpenParen);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationCloseParen);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationOpenBrace);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationCloseBrace);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationOpenBracket);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationCloseBracket);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationComma);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationSemicolon);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationColon);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationQuestionMark);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationBackslash);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationHash);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationDot);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationArrow);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationEllipsis);
+}
+
+TEST(Lexer, Operators) {
+  //  COperatorGreaterEqual,     // >=
+  //  COperatorLessEqual,        // <=
+  //  COperatorAnd,              // &&
+  //  COperatorOr,               // ||
+  //  COperatorNot,              // !
+  //  COperatorBitwiseAnd,       // &
+  //  COperatorBitwiseOr,        // |
+  //  COperatorBitwiseXor,       // ^
+  //  COperatorBitwiseNot,       // ~
+  //  COperatorLeftShift,        // <<
+  //  COperatorRightShift,       // >>
+  //  COperatorAssignment,       // =
+  //  COperatorPlusAssign,       // +=
+  //  COperatorMinusAssign,      // -=
+  //  COperatorMultiplyAssign,   // *=
+  //  COperatorDivideAssign,     // /=
+  //  COperatorModuloAssign,     // %=
+  //  COperatorAndAssign,        // &=
+  //  COperatorOrAssign,         // |=
+  //  COperatorXorAssign,        // ^=
+  //  COperatorLeftShiftAssign,  // <<=
+  //  COperatorRightShiftAssign, // >>=
+  string source = ">=<=&&||!&|^~<<>> =+=-=*=/=%=&=|=^=<<=>>=";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorGreaterEqual);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorLessEqual);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorAnd);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorOr);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorNot);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorBitwiseAnd);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorBitwiseOr);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorBitwiseXor);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorBitwiseNot);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorLeftShift);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorRightShift);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorAssignment);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorPlusAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorMinusAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorMultiplyAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorDivideAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorModuloAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorAndAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorOrAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorXorAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorLeftShiftAssign);
+  ASSERT_EQ(lexer.next()->type, CTokenType::COperatorRightShiftAssign);
+}
