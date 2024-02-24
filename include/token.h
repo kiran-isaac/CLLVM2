@@ -111,7 +111,6 @@ enum class CTokenType {
   CPunctuationColon,         // :
   CPunctuationQuestionMark,  // ?
   CPunctuationBackslash,     // \.
-  CPunctuationHash,          // #
   CPunctuationDot,           // .
   CPunctuationArrow,         // ->
   CPunctuationEllipsis,      // ...

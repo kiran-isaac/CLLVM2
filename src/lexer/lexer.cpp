@@ -47,32 +47,43 @@ Lexer::Lexer(std::istream &source) : source(source) {
   col = 1;
 }
 
-char Lexer::parse_escape_character() {
+std::optional<char> Lexer::parse_escape_character() {
   int val = 0;
   int i = 0; // counter for octal escape sequences
   advance();
   switch (*c) {
     case 'a':
+      advance();
       return '\a';
     case 'b':
+      advance();
       return '\b';
     case 'f':
+      advance();
       return '\f';
     case 'n':
+      advance();
       return '\n';
     case 'r':
+      advance();
       return '\r';
     case 't':
+      advance();
       return '\t';
     case 'v':
+      advance();
       return '\v';
     case '\\':
+      advance();
       return '\\';
     case '\'':
+      advance();
       return '\'';
     case '"':
+      advance();
       return '"';
     case '?':
+      advance();
       return '?';
     case '0':
       advance();
@@ -87,12 +98,19 @@ char Lexer::parse_escape_character() {
           advance();
           i++;
           
-          if (i >= 2) {
+          if (i > 2) {
             lexerError = "Invalid octal escape sequence";
-            return -1;
+            return std::nullopt;
           }
         }
-       }
+        
+        if (val > 255) {
+          lexerError = "Invalid octal escape sequence";
+          return std::nullopt;
+        }
+        
+        return static_cast<char>(val);
+      }
       return '\0';
     
     case 'x':
@@ -112,11 +130,11 @@ char Lexer::parse_escape_character() {
         
         if (val > 255) {
           lexerError = "Invalid hexadecimal escape sequence";
-          return -1;
+          return std::nullopt;
         }
       }
       return static_cast<char>(val);
-      
+    
     case '1':
     case '2':
     case '3':
@@ -125,21 +143,23 @@ char Lexer::parse_escape_character() {
     case '6':
     case '7':
       val = 0;
+      i = 0;
       while (isdigit(*c) && *c < '8') {
         val *= 8;
         val += *c - '0';
         advance();
+        i++;
         
-        if (val > 255) {
+        if (val > 255 || i > 3) {
           lexerError = "Invalid octal escape sequence";
-          return -1;
+          return std::nullopt;
         }
       }
       return static_cast<char>(val);
-      
+    
     default:
       lexerError = "Invalid escape sequence";
-      return -1;
+      return std::nullopt;
   }
 }
 
@@ -148,10 +168,11 @@ unique_ptr<CToken> Lexer::parse_char() {
   string str;
   
   if (*c == '\\') {
-    str += parse_escape_character();
-    if (str.back() == -1) {
+    auto chr = parse_escape_character();
+    if (!chr.has_value()) {
       return std::make_unique<CToken>(CTokenType::CUnknown, "", line, col);
     }
+    str += chr.value();
   } else {
     str += *c;
     advance();
@@ -172,10 +193,11 @@ unique_ptr<CToken> Lexer::parse_string() {
   
   while (true) {
     if (*c == '\\') {
-      str += parse_escape_character();
-      if (str.back() == -1) {
+      auto chr = parse_escape_character();
+      if (!chr.has_value()) {
         return std::make_unique<CToken>(CTokenType::CUnknown, "", line, col);
       }
+      str += chr.value();
     } else if (*c == '"') {
       advance();
       return std::make_unique<CToken>(CTokenType::CConstantString, str.c_str(), line, col);
@@ -191,11 +213,11 @@ unique_ptr<CToken> Lexer::parse_word() {
 //  enum extern float for goto if inline int long register
 //  restrict return short signed sizeof static struct switch typedef union
 //  unsigned void volatile while _Bool _Complex _Imaginary
-
+  
   string id;
   id += *c;
   advance();
-
+  
   while (isalnum(*c) || *c == '_') {
     id += *c;
     advance();
@@ -367,6 +389,69 @@ unique_ptr<CToken> Lexer::parse_num() {
   }
 }
 
+unique_ptr<CToken> Lexer::parse_preprocessor() {
+  string str;
+  str += *c;
+  advance();
+  
+  while (isalpha(*c) || *c == '#') {
+    str += *c;
+    advance();
+  }
+  
+  switch (str[1]) {
+    case 'i':
+      if (str == "#include") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorInclude, str.c_str(), line, col);
+      } else if (str == "#if") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorIf, str.c_str(), line, col);
+      } else if (str == "#ifdef") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorIfdef, str.c_str(), line, col);
+      } else if (str == "#ifndef") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorIfndef, str.c_str(), line, col);
+      }
+      break;
+    case 'd':
+      if (str == "#define") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorDefine, str.c_str(), line, col);
+      }
+      break;
+    case 'u':
+      if (str == "#undef") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorUndef, str.c_str(), line, col);
+      }
+      break;
+    case 'l':
+      if (str == "#line") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorLine, str.c_str(), line, col);
+      }
+      break;
+    case 'e':
+      if (str == "#error") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorError, str.c_str(), line, col);
+      } else if (str == "#elif") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorElif, str.c_str(), line, col);
+      } else if (str == "#else") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorElse, str.c_str(), line, col);
+      } else if (str == "#endif") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorEndif, str.c_str(), line, col);
+      }
+      break;
+    case 'p':
+      if (str == "#pragma") {
+        return std::make_unique<CToken>(CTokenType::CPreprocessorPragma, str.c_str(), line, col);
+      }
+      break;
+    case '#' :
+      return std::make_unique<CToken>(CTokenType::CPreprocessorHashHash, str.c_str(), line, col);
+    
+    default:
+      break;
+  }
+  
+  lexerError = "Unknown preprocessor directive";
+  return std::make_unique<CToken>(CTokenType::CUnknown, "", line, col);
+}
 
 unique_ptr<CToken> Lexer::next() {
   string str;
@@ -550,9 +635,6 @@ unique_ptr<CToken> Lexer::next() {
       case '\\':
         advance();
         return std::make_unique<CToken>(CTokenType::CPunctuationBackslash, "\\", line, col);
-      case '#':
-        advance();
-        return std::make_unique<CToken>(CTokenType::CPunctuationHash, "#", line, col);
       case '.':
         advance();
         if (*c == '.') {
@@ -563,7 +645,7 @@ unique_ptr<CToken> Lexer::next() {
           }
         }
         return std::make_unique<CToken>(CTokenType::CPunctuationDot, ".", line, col);
-        
+      
       case '0':
       case '1':
       case '2':
@@ -575,19 +657,21 @@ unique_ptr<CToken> Lexer::next() {
       case '8':
       case '9':
         return parse_num();
-        
+      
       case '\'':
         return parse_char();
-        
+      
       case '"':
         return parse_string();
-        
-        
+      
+      case '#':
+        return parse_preprocessor();
+      
       case 'a'...'z':
       case 'A'...'Z':
       case '_':
         return parse_word();
-        
+      
       default:
         lexerError = "Cannot parse token";
         return std::make_unique<CToken>(CTokenType::CUnknown, "", line, col);

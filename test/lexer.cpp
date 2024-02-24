@@ -58,22 +58,7 @@ TEST(Lexer, AllKeywordsWithCharsMissing) {
 }
 
 TEST(Lexer, Punctuation) {
-//  CPunctuationOpenParen,     // (
-//  CPunctuationCloseParen,    // )
-//  CPunctuationOpenBrace,     // {
-//  CPunctuationCloseBrace,    // }
-//  CPunctuationOpenBracket,   // [
-//  CPunctuationCloseBracket,  // ]
-//  CPunctuationComma,         // ,
-//  CPunctuationSemicolon,     // ;
-//  CPunctuationColon,         // :
-//  CPunctuationQuestionMark,  // ?
-//  CPunctuationBackslash,     // \.
-//  CPunctuationHash,          // #
-//  CPunctuationDot,           // .
-//  CPunctuationArrow,         // ->
-//  CPunctuationEllipsis,      // ...
-  string source = "(){}[],;:?\\#.->...";
+  string source = "(){}[],;:?\\.->...";
   std::istringstream sourceStream(source);
   
   Lexer lexer(sourceStream);
@@ -90,35 +75,12 @@ TEST(Lexer, Punctuation) {
   ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationColon);
   ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationQuestionMark);
   ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationBackslash);
-  ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationHash);
   ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationDot);
   ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationArrow);
   ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationEllipsis);
 }
 
 TEST(Lexer, Operators) {
-  //  COperatorGreaterEqual,     // >=
-  //  COperatorLessEqual,        // <=
-  //  COperatorAnd,              // &&
-  //  COperatorOr,               // ||
-  //  COperatorNot,              // !
-  //  COperatorBitwiseAnd,       // &
-  //  COperatorBitwiseOr,        // |
-  //  COperatorBitwiseXor,       // ^
-  //  COperatorBitwiseNot,       // ~
-  //  COperatorLeftShift,        // <<
-  //  COperatorRightShift,       // >>
-  //  COperatorAssignment,       // =
-  //  COperatorPlusAssign,       // +=
-  //  COperatorMinusAssign,      // -=
-  //  COperatorMultiplyAssign,   // *=
-  //  COperatorDivideAssign,     // /=
-  //  COperatorModuloAssign,     // %=
-  //  COperatorAndAssign,        // &=
-  //  COperatorOrAssign,         // |=
-  //  COperatorXorAssign,        // ^=
-  //  COperatorLeftShiftAssign,  // <<=
-  //  COperatorRightShiftAssign, // >>=
   string source = ">=<=&&||!&|^~<<>> =+=-=*=/=%=&=|=^=<<=>>=";
   std::istringstream sourceStream(source);
   
@@ -147,4 +109,91 @@ TEST(Lexer, Operators) {
   ASSERT_EQ(lexer.next()->type, CTokenType::COperatorXorAssign);
   ASSERT_EQ(lexer.next()->type, CTokenType::COperatorLeftShiftAssign);
   ASSERT_EQ(lexer.next()->type, CTokenType::COperatorRightShiftAssign);
+}
+
+TEST(Lexer, Preprocessor) {
+  string source = "#define #include #if #ifdef #ifndef #else #elif #endif #undef #line #error #pragma ##";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorDefine);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorInclude);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorIf);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorIfdef);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorIfndef);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorElse);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorElif);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorEndif);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorUndef);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorLine);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorError);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorPragma);
+  ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorHashHash);
+}
+
+TEST(Lexer, Integers) {
+  string source = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  for (int i = 0; i < 16; i++) {
+    token = lexer.next();
+    ASSERT_EQ(token->type, CTokenType::CConstantInteger);
+  }
+}
+
+TEST(Lexer, Floats) {
+  string source = "0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  for (int i = 0; i < 16; i++) {
+    token = lexer.next();
+    ASSERT_EQ(token->type, CTokenType::CConstantFloat);
+  }
+}
+
+TEST(Lexer, Character) {
+  string source = "'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' ' '";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  for (int i = 0; i < 62; i++) {
+    token = lexer.next();
+    ASSERT_EQ(token->type, CTokenType::CConstantChar);
+  }
+}
+
+TEST(Lexer, EscapeChar) {
+  string source = R"('\xff' '\xf' '\021' '\377' '\7' '\n' '\t' '\r' '\0' '\'' '\"' '\\' )";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  for (int i = 0; i < 12; i++) {
+    token = lexer.next();
+    ASSERT_EQ(token->type, CTokenType::CConstantChar);
+  }
+}
+
+TEST(Lexer, EscapeCharInString) {
+  string source = R"("\xff" "\xf" "\021" "\377" "\7" "\n" "\t" "\r" "\0" "\'" "\"")";
+  std::istringstream sourceStream(source);
+  
+  Lexer lexer(sourceStream);
+  unique_ptr<CToken> token;
+  
+  for (int i = 0; i < 10; i++) {
+    token = lexer.next();
+    ASSERT_EQ(token->type, CTokenType::CConstantString);
+  }
 }

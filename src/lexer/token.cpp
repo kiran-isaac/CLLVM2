@@ -104,8 +104,6 @@ string CToken::getTypeAsString() const {
       return "#else";
     case CTokenType::CPreprocessorEndif:
       return "#endif";
-    case CTokenType::CPreprocessorHashHash:
-      return "##";
     
     case CTokenType::CConstantInteger:
       return "integer constant";
@@ -207,8 +205,6 @@ string CToken::getTypeAsString() const {
       return "\\";
     case CTokenType::CPunctuationDot:
       return ".";
-    case CTokenType::CPunctuationHash:
-      return "#";
     
     case CTokenType::CEndOfFile:
       return "end of file";

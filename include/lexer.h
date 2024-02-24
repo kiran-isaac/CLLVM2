@@ -4,6 +4,8 @@
 #include <token.h>
 #include <string>
 #include <fstream>
+#include <optional>
+
 
 using std::unique_ptr, std::shared_ptr, std::string;
 
@@ -36,11 +38,13 @@ private:
   
   unique_ptr<CToken> parse_string();
   
-  char parse_escape_character();
+  std::optional<char> parse_escape_character();
   
   unique_ptr<CToken> parse_word();
   
   unique_ptr<CToken> parse_keyword();
   
   bool is_keyword(const string &str);
+  
+  unique_ptr<CToken> parse_preprocessor();
 };
