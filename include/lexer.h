@@ -21,7 +21,6 @@ private:
 
   char *c;
   string lexerError;
-  string id;
 
   unsigned int line;
   unsigned int col;

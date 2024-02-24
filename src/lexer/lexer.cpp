@@ -186,184 +186,149 @@ unique_ptr<CToken> Lexer::parse_string() {
   }
 }
 
-// TODO make this work when checked multiple times
-bool Lexer::is_keyword(const string &kw) {
-  advance();
-  
-  for (int i = 1; i < kw.size(); i++) {
-    id += *c;
-    if (*c != kw[i]) {
-      return false;
-    }
-    advance();
-  }
-  
-  if (isalnum(*c) || *c == '_') {
-    return false;
-  }
-  
-  return true;
-}
-
 unique_ptr<CToken> Lexer::parse_word() {
 //  auto break case char const continue default do double else
 //  enum extern float for goto if inline int long register
 //  restrict return short signed sizeof static struct switch typedef union
 //  unsigned void volatile while _Bool _Complex _Imaginary
+
+  string id;
   id += *c;
-  
-  // Switch on first char. Do not have to KW check on future chars
-  switch (*c) {
-    case 'a':
-      if (is_keyword("auto")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordAuto, "auto", line, col);
-      }
-      break;
-      
-    case 'b':
-      if (is_keyword("break")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordBreak, "break", line, col);
-      }
-      break;
-      case 'c':
-      if (is_keyword("case")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordCase, "case", line, col);
-      } else if (is_keyword("char")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordChar, "char", line, col);
-      } else if (is_keyword("const")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordConst, "const", line, col);
-      } else if (is_keyword("continue")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordContinue, "continue", line, col);
-      }
-      break;
-      
-    case 'd':
-      if (is_keyword("default")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordDefault, "default", line, col);
-      } else if (is_keyword("do")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordDo, "do", line, col);
-      } else if (is_keyword("double")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordDouble, "double", line, col);
-      }
-      break;
-      
-    case 'e':
-      if (is_keyword("else")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordElse, "else", line, col);
-      } else if (is_keyword("enum")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordEnum, "enum", line, col);
-      } else if (is_keyword("extern")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordExtern, "extern", line, col);
-      }
-      break;
-      
-    case 'f':
-      if (is_keyword("float")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordFloat, "float", line, col);
-      } else if (is_keyword("for")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordFor, "for", line, col);
-      }
-      break;
-      
-    case 'g':
-      if (is_keyword("goto")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordGoto, "goto", line, col);
-      }
-      break;
-      
-    case 'i':
-      if (is_keyword("if")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordIf, "if", line, col);
-      } else if (is_keyword("inline")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordInline, "inline", line, col);
-      } else if (is_keyword("int")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordInt, "int", line, col);
-      }
-      break;
-      
-    case 'l':
-      if (is_keyword("long")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordLong, "long", line, col);
-      }
-      break;
-      
-    case 'r':
-      if (is_keyword("register")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordRegister, "register", line, col);
-      } else if (is_keyword("restrict")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordRestrict, "restrict", line, col);
-      } else if (is_keyword("return")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordReturn, "return", line, col);
-      }
-      break;
-      
-    case 's':
-      if (is_keyword("short")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordShort, "short", line, col);
-      } else if (is_keyword("signed")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordSigned, "signed", line, col);
-      } else if (is_keyword("sizeof")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordSizeof, "sizeof", line, col);
-      } else if (is_keyword("static")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordStatic, "static", line, col);
-      } else if (is_keyword("struct")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordStruct, "struct", line, col);
-      } else if (is_keyword("switch")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordSwitch, "switch", line, col);
-      }
-      break;
-      
-    case 't':
-      if (is_keyword("typedef")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordTypedef, "typedef", line, col);
-      }
-      break;
-      
-    case 'u':
-      if (is_keyword("union")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordUnion, "union", line, col);
-      } else if (is_keyword("unsigned")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordUnsigned, "unsigned", line, col);
-      }
-      break;
-      
-    case 'v':
-      if (is_keyword("void")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordVoid, "void", line, col);
-      } else if (is_keyword("volatile")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordVolatile, "volatile", line, col);
-      }
-      break;
-      
-    case 'w':
-      if (is_keyword("while")) {
-        return std::make_unique<CToken>(CTokenType::CKeywordWhile, "while", line, col);
-      }
-      break;
-      
-    case '_':
-      if (is_keyword("_Bool")) {
-        return std::make_unique<CToken>(CTokenType::CKeyword_Bool, "_Bool", line, col);
-      } else if (is_keyword("_Complex")) {
-        return std::make_unique<CToken>(CTokenType::CKeyword_Complex, "_Complex", line, col);
-      } else if (is_keyword("_Imaginary")) {
-        return std::make_unique<CToken>(CTokenType::CKeyword_Imaginary, "_Imaginary", line, col);
-      }
-      break;
-      
-    default:
-      break;
-  }
-  
+  advance();
+
   while (isalnum(*c) || *c == '_') {
     id += *c;
     advance();
   }
   
-  // copy id to a new string
-  string idCopy = id;
-  id.clear();
-  return std::make_unique<CToken>(CTokenType::CIdentifier, idCopy.c_str(), line, col);
+  switch (id[0]) {
+    case 'a':
+      if (id == "auto") {
+        return std::make_unique<CToken>(CTokenType::CKeywordAuto, id.c_str(), line, col);
+      }
+      break;
+    case 'b':
+      if (id == "break") {
+        return std::make_unique<CToken>(CTokenType::CKeywordBreak, id.c_str(), line, col);
+      }
+      break;
+    case 'c':
+      if (id == "case") {
+        return std::make_unique<CToken>(CTokenType::CKeywordCase, id.c_str(), line, col);
+      } else if (id == "char") {
+        return std::make_unique<CToken>(CTokenType::CKeywordChar, id.c_str(), line, col);
+      } else if (id == "const") {
+        return std::make_unique<CToken>(CTokenType::CKeywordConst, id.c_str(), line, col);
+      } else if (id == "continue") {
+        return std::make_unique<CToken>(CTokenType::CKeywordContinue, id.c_str(), line, col);
+      }
+      break;
+    case 'd':
+      if (id == "default") {
+        return std::make_unique<CToken>(CTokenType::CKeywordDefault, id.c_str(), line, col);
+      } else if (id == "do") {
+        return std::make_unique<CToken>(CTokenType::CKeywordDo, id.c_str(), line, col);
+      } else if (id == "double") {
+        return std::make_unique<CToken>(CTokenType::CKeywordDouble, id.c_str(), line, col);
+      }
+      break;
+    case 'e':
+      if (id == "else") {
+        return std::make_unique<CToken>(CTokenType::CKeywordElse, id.c_str(), line, col);
+      } else if (id == "enum") {
+        return std::make_unique<CToken>(CTokenType::CKeywordEnum, id.c_str(), line, col);
+      } else if (id == "extern") {
+        return std::make_unique<CToken>(CTokenType::CKeywordExtern, id.c_str(), line, col);
+      }
+      break;
+    case 'f':
+      if (id == "float") {
+        return std::make_unique<CToken>(CTokenType::CKeywordFloat, id.c_str(), line, col);
+      } else if (id == "for") {
+        return std::make_unique<CToken>(CTokenType::CKeywordFor, id.c_str(), line, col);
+      }
+      break;
+    case 'g':
+      if (id == "goto") {
+        return std::make_unique<CToken>(CTokenType::CKeywordGoto, id.c_str(), line, col);
+      }
+      break;
+    case 'i':
+      if (id == "if") {
+        return std::make_unique<CToken>(CTokenType::CKeywordIf, id.c_str(), line, col);
+      } else if (id == "inline") {
+        return std::make_unique<CToken>(CTokenType::CKeywordInline, id.c_str(), line, col);
+      } else if (id == "int") {
+        return std::make_unique<CToken>(CTokenType::CKeywordInt, id.c_str(), line, col);
+      }
+      break;
+    case 'l':
+      if (id == "long") {
+        return std::make_unique<CToken>(CTokenType::CKeywordLong, id.c_str(), line, col);
+      }
+      break;
+    case 'r':
+      if (id == "register") {
+        return std::make_unique<CToken>(CTokenType::CKeywordRegister, id.c_str(), line, col);
+      } else if (id == "restrict") {
+        return std::make_unique<CToken>(CTokenType::CKeywordRestrict, id.c_str(), line, col);
+      } else if (id == "return") {
+        return std::make_unique<CToken>(CTokenType::CKeywordReturn, id.c_str(), line, col);
+      }
+      break;
+    case 's':
+      if (id == "short") {
+        return std::make_unique<CToken>(CTokenType::CKeywordShort, id.c_str(), line, col);
+      } else if (id == "signed") {
+        return std::make_unique<CToken>(CTokenType::CKeywordSigned, id.c_str(), line, col);
+      } else if (id == "sizeof") {
+        return std::make_unique<CToken>(CTokenType::CKeywordSizeof, id.c_str(), line, col);
+      } else if (id == "static") {
+        return std::make_unique<CToken>(CTokenType::CKeywordStatic, id.c_str(), line, col);
+      } else if (id == "struct") {
+        return std::make_unique<CToken>(CTokenType::CKeywordStruct, id.c_str(), line, col);
+      } else if (id == "switch") {
+        return std::make_unique<CToken>(CTokenType::CKeywordSwitch, id.c_str(), line, col);
+      }
+      break;
+    case 't':
+      if (id == "typedef") {
+        return std::make_unique<CToken>(CTokenType::CKeywordTypedef, id.c_str(), line, col);
+      }
+      break;
+    case 'u':
+      if (id == "union") {
+        return std::make_unique<CToken>(CTokenType::CKeywordUnion, id.c_str(), line, col);
+      } else if (id == "unsigned") {
+        return std::make_unique<CToken>(CTokenType::CKeywordUnsigned, id.c_str(), line, col);
+      }
+      break;
+    case 'v':
+      if (id == "void") {
+        return std::make_unique<CToken>(CTokenType::CKeywordVoid, id.c_str(), line, col);
+      } else if (id == "volatile") {
+        return std::make_unique<CToken>(CTokenType::CKeywordVolatile, id.c_str(), line, col);
+      }
+      break;
+    case 'w':
+      if (id == "while") {
+        return std::make_unique<CToken>(CTokenType::CKeywordWhile, id.c_str(), line, col);
+      }
+      break;
+    case '_':
+      if (id == "_Bool") {
+        return std::make_unique<CToken>(CTokenType::CKeyword_Bool, id.c_str(), line, col);
+      } else if (id == "_Complex") {
+        return std::make_unique<CToken>(CTokenType::CKeyword_Complex, id.c_str(), line, col);
+      } else if (id == "_Imaginary") {
+        return std::make_unique<CToken>(CTokenType::CKeyword_Imaginary, id.c_str(), line, col);
+      }
+      break;
+    default:
+      break;
+  }
+  
+  return std::make_unique<CToken>(CTokenType::CIdentifier, id.c_str(), line, col);
 }
 
 unique_ptr<CToken> Lexer::parse_num() {
