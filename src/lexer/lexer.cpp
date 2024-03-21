@@ -1,22 +1,24 @@
 #include "lexer.h"
 #include <iostream>
+#include <istream>
 #include <algorithm>
+#include <utility>
 
 using std::unique_ptr, std::shared_ptr, std::string;
 
 #define isIdChar(c) isalnum(*c) || *c == '_' || isdigit(*c)
 
 void Lexer::refreshBuffer1() {
-  source.read(buf1, 4096);
-  if (source.eof()) {
-    buf1[source.gcount()] = EOF;
+  source->read(buf1, 4096);
+  if (source->eof()) {
+    buf1[source->gcount()] = EOF;
   }
 }
 
 void Lexer::refreshBuffer2() {
-  source.read(buf2, 4096);
-  if (source.eof()) {
-    buf2[source.gcount()] = EOF;
+  source->read(buf2, 4096);
+  if (source->eof()) {
+    buf2[source->gcount()] = EOF;
   }
 }
 
@@ -35,7 +37,7 @@ void Lexer::advance() {
   col++;
 }
 
-Lexer::Lexer(std::istream &source) : source(source) {
+Lexer::Lexer(std::unique_ptr<std::istream> &source, string filename) : filename(std::move(filename)), source(std::move(source)), line(1), col(1), isBuffer1(true) {
   // put eof at the end of buf1 and buf2
   std::fill_n(buf1, 4096, EOF);
   std::fill_n(buf2, 4096, EOF);
@@ -45,8 +47,6 @@ Lexer::Lexer(std::istream &source) : source(source) {
   refreshBuffer1();
   
   c = buf1;
-  line = 1;
-  col = 1;
 }
 
 std::optional<char> Lexer::lex_escape_character() {
