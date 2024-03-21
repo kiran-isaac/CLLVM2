@@ -27,24 +27,22 @@ private:
   unsigned int line;
   unsigned int col;
   
+  bool isBuffer1;
+  
   void refreshBuffer1();
   void refreshBuffer2();
 
   void advance();
   
-  unique_ptr<CToken> parse_num();
+  unique_ptr<CToken> lex_num();
   
-  unique_ptr<CToken> parse_char();
+  unique_ptr<CToken> lex_char();
   
-  unique_ptr<CToken> parse_string();
+  unique_ptr<CToken> lex_string();
   
-  std::optional<char> parse_escape_character();
+  std::optional<char> lex_escape_character();
   
-  unique_ptr<CToken> parse_word();
+  unique_ptr<CToken> lex_word();
   
-  unique_ptr<CToken> parse_keyword();
-  
-  bool is_keyword(const string &str);
-  
-  unique_ptr<CToken> parse_preprocessor();
+  unique_ptr<CToken> lex_preprocessor();
 };

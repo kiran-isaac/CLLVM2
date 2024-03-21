@@ -4,6 +4,8 @@
 
 using std::unique_ptr, std::shared_ptr, std::string;
 
+#define isIdChar(c) isalnum(*c) || *c == '_' || isdigit(*c)
+
 void Lexer::refreshBuffer1() {
   source.read(buf1, 4096);
   if (source.eof()) {
@@ -20,12 +22,13 @@ void Lexer::refreshBuffer2() {
 
 void Lexer::advance() {
   if (c == buf1 + 4095) {
-    if (source.eof()) {
-      c = nullptr;
-      return;
-    }
+    refreshBuffer2();
+    c = buf2;
+    isBuffer1 = false;
+  } else if (c == buf2 + 4095) {
     refreshBuffer1();
     c = buf1;
+    isBuffer1 = true;
   } else {
     c++;
   }
@@ -40,14 +43,13 @@ Lexer::Lexer(std::istream &source) : source(source) {
   buf1[4096] = EOF;
   buf2[4096] = EOF;
   refreshBuffer1();
-  refreshBuffer2();
   
   c = buf1;
   line = 1;
   col = 1;
 }
 
-std::optional<char> Lexer::parse_escape_character() {
+std::optional<char> Lexer::lex_escape_character() {
   int val = 0;
   int i = 0; // counter for octal escape sequences
   advance();
@@ -163,12 +165,12 @@ std::optional<char> Lexer::parse_escape_character() {
   }
 }
 
-unique_ptr<CToken> Lexer::parse_char() {
+unique_ptr<CToken> Lexer::lex_char() {
   advance();
   string str;
   
   if (*c == '\\') {
-    auto chr = parse_escape_character();
+    auto chr = lex_escape_character();
     if (!chr.has_value()) {
       return std::make_unique<CToken>(CTokenType::CUnknown, "", line, col);
     }
@@ -187,19 +189,20 @@ unique_ptr<CToken> Lexer::parse_char() {
   return std::make_unique<CToken>(CTokenType::CConstantChar, str.c_str(), line, col);
 }
 
-unique_ptr<CToken> Lexer::parse_string() {
+unique_ptr<CToken> Lexer::lex_string() {
   advance();
   string str;
   
   while (true) {
     if (*c == '\\') {
-      auto chr = parse_escape_character();
+      auto chr = lex_escape_character();
       if (!chr.has_value()) {
         return std::make_unique<CToken>(CTokenType::CUnknown, "", line, col);
       }
       str += chr.value();
     } else if (*c == '"') {
       advance();
+      str = '"' + str + '"'; // add quotes to string
       return std::make_unique<CToken>(CTokenType::CConstantString, str.c_str(), line, col);
     } else {
       str += *c;
@@ -208,7 +211,7 @@ unique_ptr<CToken> Lexer::parse_string() {
   }
 }
 
-unique_ptr<CToken> Lexer::parse_word() {
+unique_ptr<CToken> Lexer::lex_word() {
 //  auto break case char const continue default do double else
 //  enum extern float for goto if inline int long register
 //  restrict return short signed sizeof static struct switch typedef union
@@ -218,7 +221,7 @@ unique_ptr<CToken> Lexer::parse_word() {
   id += *c;
   advance();
   
-  while (isalnum(*c) || *c == '_') {
+  while (isIdChar(c)) {
     id += *c;
     advance();
   }
@@ -353,12 +356,11 @@ unique_ptr<CToken> Lexer::parse_word() {
   return std::make_unique<CToken>(CTokenType::CIdentifier, id.c_str(), line, col);
 }
 
-unique_ptr<CToken> Lexer::parse_num() {
+unique_ptr<CToken> Lexer::lex_num() {
   bool isFloat = false;
   string str;
   
   while (true) {
-    advance();
     switch (*c) {
       case '0':
       case '1':
@@ -386,15 +388,26 @@ unique_ptr<CToken> Lexer::parse_num() {
           return std::make_unique<CToken>(CTokenType::CConstantInteger, str.c_str(), line, col);
         }
     }
+    
+    advance();
   }
 }
 
-unique_ptr<CToken> Lexer::parse_preprocessor() {
+unique_ptr<CToken> Lexer::lex_preprocessor() {
   string str;
   str += *c;
   advance();
   
-  while (isalpha(*c) || *c == '#') {
+  if (*c == '#') {
+    advance();
+    return std::make_unique<CToken>(CTokenType::CPreprocessorHashHash, "##", line, col);
+  }
+  
+  while (*c == ' ' || *c == '\t') {
+    advance();
+  }
+  
+  while (isIdChar(c)) {
     str += *c;
     advance();
   }
@@ -458,10 +471,9 @@ unique_ptr<CToken> Lexer::next() {
   
   while (true) {
     switch (*c) {
+      
       case EOF:
         return std::make_unique<CToken>(CTokenType::CEndOfFile, "", line, col);
-        
-        // Whitespace
       case '\n':
         line++;
         col = 1;
@@ -510,6 +522,29 @@ unique_ptr<CToken> Lexer::next() {
         if (*c == '=') {
           advance();
           return std::make_unique<CToken>(CTokenType::COperatorDivideAssign, "/=", line, col);
+        } else if (*c == '/') {
+          advance();
+          while (*c != '\n' && *c != EOF) {
+            advance();
+          }
+          break;
+        } else if (*c == '*') {
+          advance();
+          while (true) {
+            if (*c == EOF) {
+              lexerError = "Unterminated comment";
+              return std::make_unique<CToken>(CTokenType::CUnknown, "", line, col);
+            } else if (*c == '*') {
+              advance();
+              if (*c == '/') {
+                advance();
+                break;
+              }
+            } else {
+              advance();
+            }
+          }
+          break;
         }
         return std::make_unique<CToken>(CTokenType::COperatorDivide, "/", line, col);
       
@@ -633,8 +668,15 @@ unique_ptr<CToken> Lexer::next() {
         advance();
         return std::make_unique<CToken>(CTokenType::CPunctuationQuestionMark, "?", line, col);
       case '\\':
-        advance();
-        return std::make_unique<CToken>(CTokenType::CPunctuationBackslash, "\\", line, col);
+       advance();
+        if (*c == '\n') {
+          line += 1;
+          col = 1;
+          advance();
+        } else {
+          return std::make_unique<CToken>(CTokenType::CPunctuationBackslash, "\\", line, col);
+        }
+        break;
       case '.':
         advance();
         if (*c == '.') {
@@ -656,21 +698,21 @@ unique_ptr<CToken> Lexer::next() {
       case '7':
       case '8':
       case '9':
-        return parse_num();
+        return lex_num();
       
       case '\'':
-        return parse_char();
+        return lex_char();
       
       case '"':
-        return parse_string();
+        return lex_string();
       
       case '#':
-        return parse_preprocessor();
+        return lex_preprocessor();
       
       case 'a'...'z':
       case 'A'...'Z':
       case '_':
-        return parse_word();
+        return lex_word();
       
       default:
         lexerError = "Cannot parse token";
