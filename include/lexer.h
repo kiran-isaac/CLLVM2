@@ -11,13 +11,13 @@ using std::unique_ptr, std::shared_ptr, std::string;
 
 class Lexer {
 public:
-  explicit Lexer(std::unique_ptr<std::istream> &source, string filename = "");
+  explicit Lexer(std::istream &source, string filename = "");
   
   unique_ptr<CToken> next();
 
   string filename;
 private:
-  std::unique_ptr<std::istream> source;
+  std::istream *source;
 
   char buf1[4097]{};
   char buf2[4097]{};

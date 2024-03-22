@@ -13,14 +13,14 @@ TEST(Lexer, TestFileOpenAndRead) {
     FAIL();
   }
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+  Lexer lexer(static_cast<std::istream &>(source));
 }
 
 TEST(Lexer, AllKeywords) {
   string source = "auto break case char const continue default do double else enum extern float for goto if inline int long register restrict return short signed sizeof static struct switch typedef union unsigned void volatile while _Bool _Complex _Imaginary";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+  Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 32; i++) {
@@ -34,7 +34,7 @@ TEST(Lexer, AllKeywordsWithExtraChars) {
   string source = "autoo breakk casee charr constt continuee defaultt doo doublee elsee enumm externn floatt forr gotoo iff inlinee intt longg registerr restricct returnn shortt signedd sizeoff staticc structt switchh typedeff unionn unsignedd voidd volatilee whilee _Booll _Complexx _Imaginaryy";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 32; i++) {
@@ -48,7 +48,7 @@ TEST(Lexer, AllKeywordsWithCharsMissing) {
   string source = "aut brak cas cha cons cont defaul d doubl els enu exter floa fo got i inlin in lo registe restric retur shor signe sizeo stat struc switc typede unio unsigne voi volatil whil _Boo _Compl _Imaginar";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 32; i++) {
@@ -61,7 +61,7 @@ TEST(Lexer, Punctuation) {
   string source = "(){}[],;:?\\.->...";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   ASSERT_EQ(lexer.next()->type, CTokenType::CPunctuationOpenParen);
@@ -84,7 +84,7 @@ TEST(Lexer, Operators) {
   string source = ">=<=&&||!&|^~<<>> =+=-=*=/=%=&=|=^=<<=>>=";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   ASSERT_EQ(lexer.next()->type, CTokenType::COperatorGreaterEqual);
@@ -115,7 +115,7 @@ TEST(Lexer, Preprocessor) {
   string source = "#define #include #if #ifdef #ifndef #else #elif #endif #undef #line #error #pragma ##";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   ASSERT_EQ(lexer.next()->type, CTokenType::CPreprocessorDefine);
@@ -137,7 +137,7 @@ TEST(Lexer, Integers) {
   string source = "0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 16; i++) {
@@ -150,7 +150,7 @@ TEST(Lexer, Floats) {
   string source = "0.0 1.0 2.0 3.0 4.0 5.0 6.0 7.0 8.0 9.0 10.0 11.0 12.0 13.0 14.0 15.0";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 16; i++) {
@@ -163,7 +163,7 @@ TEST(Lexer, Character) {
   string source = "'a' 'b' 'c' 'd' 'e' 'f' 'g' 'h' 'i' 'j' 'k' 'l' 'm' 'n' 'o' 'p' 'q' 'r' 's' 't' 'u' 'v' 'w' 'x' 'y' 'z' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' '0' '1' '2' '3' '4' '5' '6' '7' '8' '9' ' '";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 62; i++) {
@@ -176,7 +176,7 @@ TEST(Lexer, EscapeChar) {
   string source = R"('\xff' '\xf' '\021' '\377' '\7' '\n' '\t' '\r' '\0' '\'' '\"' '\\' )";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 12; i++) {
@@ -189,7 +189,7 @@ TEST(Lexer, EscapeCharInString) {
   string source = R"("\xff" "\xf" "\021" "\377" "\7" "\n" "\t" "\r" "\0" "\'" "\"")";
   std::istringstream sourceStream(source);
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(sourceStream));
   unique_ptr<CToken> token;
   
   for (int i = 0; i < 10; i++) {
@@ -201,7 +201,7 @@ TEST(Lexer, EscapeCharInString) {
 TEST(Lexer, Stdio) {
   std::ifstream source("/usr/include/stdio.h");
   
-  Lexer lexer((unique_ptr<std::istream> &) std::move(source));
+ Lexer lexer(static_cast<std::istream &>(source));
   unique_ptr<CToken> token;
 
   int count = 0;

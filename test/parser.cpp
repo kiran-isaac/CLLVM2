@@ -21,7 +21,7 @@ TEST(Parser, Include) {
 
   std::istringstream sourceStream(source);
 
-  std::unique_ptr<std::istream> stream = std::make_unique<std::istringstream>(source);
+  std::ifstream stream(source);
   
   Parser parser(stream, options);
   auto ast = parser.parse();

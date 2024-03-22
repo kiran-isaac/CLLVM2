@@ -59,8 +59,8 @@ void Parser::parse_include() {
   
   std::cout << "Decending to depth " << lexers.size()  << " with " << filename << std::endl;
   
-  std::unique_ptr<std::istream> stream = std::make_unique<std::ifstream>(filename);
+  std::ifstream stream(filename);
   
-  lexers.push_back(std::make_unique<Lexer>(stream, filename));
+  lexers.push_back(std::make_unique<Lexer>((std::istream &) stream, filename));
   next();
 }

@@ -37,10 +37,12 @@ void Lexer::advance() {
   col++;
 }
 
-Lexer::Lexer(std::unique_ptr<std::istream> &source, string filename) : filename(std::move(filename)), source(std::move(source)), line(1), col(1), isBuffer1(true) {
+Lexer::Lexer(std::istream &source, string filename) : filename(std::move(filename)), line(1), col(1), isBuffer1(true) {
   // put eof at the end of buf1 and buf2
   std::fill_n(buf1, 4096, EOF);
   std::fill_n(buf2, 4096, EOF);
+
+  this->source = &source;
   
   buf1[4096] = EOF;
   buf2[4096] = EOF;

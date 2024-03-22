@@ -29,7 +29,7 @@ private:
   unique_ptr<CToken> token;
   
 public:
-  explicit Parser(unique_ptr<std::istream> &source, shared_ptr<Options> options) : options(std::move(options)){
+  explicit Parser(std::istream &source, shared_ptr<Options> options) : options(std::move(options)){
     lexers.push_back(std::make_unique<Lexer>(source));
     current_lexer = lexers.back().get();
     next();
